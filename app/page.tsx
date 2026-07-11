@@ -25,7 +25,7 @@ import CofounderModal from '@/components/CofounderModal'
 
 type FieldFilter = 'all' | Field
 type ModelFilter = 'all' | SourceModel
-type TopFilter = 'all' | 'self' | 'high'
+type TopFilter = 'all' | 'self' | 'high' | 'mine'
 type SizeFilter = 'all' | Size
 type SortOption = 'default' | 'liked' | 'score'
 
@@ -152,6 +152,7 @@ export default function Home() {
       if (model !== 'all' && i.source_model !== model) return false
       if (top === 'self' && !i.is_self_top25) return false
       if (top === 'high' && !i.is_high_conviction) return false
+      if (top === 'mine' && !likedSet.has(i.idea_key)) return false
       if (build !== 'all' && i.build_size !== build) return false
       if (outreach !== 'all' && i.outreach_size !== outreach) return false
       if (q) {
@@ -170,7 +171,7 @@ export default function Home() {
       }
       return true
     })
-  }, [ideas, search, field, model, top, build, outreach])
+  }, [ideas, search, field, model, top, build, outreach, likedSet])
 
   // Apply the chosen sort. 'default' preserves the original (filtered) order.
   const sorted = useMemo(() => {
@@ -265,6 +266,7 @@ export default function Home() {
                 { value: 'all', label: 'All' },
                 { value: 'self', label: 'Self top 25' },
                 { value: 'high', label: 'High conviction ★' },
+                { value: 'mine', label: '♥ My likes' },
               ]}
             />
             <Select<SizeFilter>
@@ -307,7 +309,9 @@ export default function Home() {
       <main className="mx-auto max-w-7xl px-4 py-6">
         {filtered.length === 0 ? (
           <div className="py-24 text-center text-neutral-400">
-            No ideas match these filters.
+            {top === 'mine' && likedSet.size === 0
+              ? "You haven't liked any ideas yet"
+              : 'No ideas match these filters.'}
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">

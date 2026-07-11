@@ -21,6 +21,7 @@ import {
 import IdeaCard from '@/components/IdeaCard'
 import DetailModal from '@/components/DetailModal'
 import EmailModal from '@/components/EmailModal'
+import CofounderModal from '@/components/CofounderModal'
 
 type FieldFilter = 'all' | Field
 type ModelFilter = 'all' | SourceModel
@@ -69,6 +70,9 @@ export default function Home() {
   // pending idea is liked once they submit an email or skip.
   const [emailPromptOpen, setEmailPromptOpen] = useState(false)
   const [pendingIdea, setPendingIdea] = useState<Idea | null>(null)
+
+  // "Find your co-founder" overlap modal.
+  const [cofounderOpen, setCofounderOpen] = useState(false)
 
   // filters
   const [search, setSearch] = useState('')
@@ -204,6 +208,12 @@ export default function Home() {
             <p className="mt-3 text-sm italic text-neutral-400">
               Like the ones you&apos;d build.
             </p>
+            <button
+              onClick={() => setCofounderOpen(true)}
+              className="mt-5 rounded-lg bg-[#F7931A] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#E8850A]"
+            >
+              Find your co-founder
+            </button>
           </div>
         </div>
       </header>
@@ -330,6 +340,17 @@ export default function Home() {
           onSubmit={handleEmailSubmit}
           onSkip={handleEmailSkip}
           onClose={handleEmailClose}
+        />
+      )}
+
+      {cofounderOpen && (
+        <CofounderModal
+          ideas={ideas}
+          onOpenIdea={(idea) => {
+            setCofounderOpen(false)
+            setSelected(idea)
+          }}
+          onClose={() => setCofounderOpen(false)}
         />
       )}
     </div>

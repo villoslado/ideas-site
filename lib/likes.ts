@@ -27,6 +27,16 @@ async function sha256Hex(input: string): Promise<string> {
     .join('')
 }
 
+/**
+ * The canonical email → visitor_id hash. Normalizes case/whitespace, then
+ * SHA-256s. This is the SAME value stored as `visitor_id` in the likes table,
+ * so hashing an email here reproduces exactly what that person's likes are
+ * keyed under. The raw email never leaves the browser.
+ */
+export function hashEmail(email: string): Promise<string> {
+  return sha256Hex(email.trim().toLowerCase())
+}
+
 /** Record a visitor id in the voters table (best-effort, dedup on visitor_id). */
 async function registerVoter(visitorId: string) {
   if (!isSupabaseConfigured) return
@@ -45,7 +55,7 @@ async function registerVoter(visitorId: string) {
  * Normalizes case/whitespace so the same email always yields the same id.
  */
 export async function setVisitorFromEmail(email: string): Promise<string> {
-  const hash = await sha256Hex(email.trim().toLowerCase())
+  const hash = await hashEmail(email)
   localStorage.setItem(VISITOR_KEY, hash)
   await registerVoter(hash)
   return hash

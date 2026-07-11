@@ -259,7 +259,7 @@ export default function Home() {
               ]}
             />
             <Select<TopFilter>
-              label="Top 25"
+              label="Picks"
               value={top}
               onChange={setTop}
               options={[

@@ -195,8 +195,8 @@ export default function Home() {
               405 AI Business Ideas
             </h1>
             <p className="mt-3 max-w-3xl text-sm leading-relaxed text-neutral-600 sm:text-base">
-              Three frontier AI models — Claude Fable 5, GPT-5.6 Sol, and Grok
-              4.5 — each generated 135 small business software ideas targeting
+              Three frontier AI models — Fable 5, GPT-5.6 Sol, and Grok 4.5 —
+              each generated 135 small business software ideas targeting
               occupations where AI is changing how work gets done. The 49
               high-conviction ideas survived both self-selection and independent
               cross-evaluation by a second model.
@@ -211,23 +211,19 @@ export default function Home() {
       {/* Sticky filter bar */}
       <div className="sticky top-0 z-40 border-b border-neutral-200 bg-white/95 backdrop-blur">
         <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-3">
-          <div className="flex items-baseline justify-between gap-4">
-            <div className="text-lg font-bold text-neutral-900">
-              405 AI Business Ideas
-            </div>
-            <span className="text-sm text-neutral-500">
+          {/* Row 1: search (grows) + result count (right-aligned, muted) */}
+          <div className="flex items-center gap-4">
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search product, idea, buyer, occupation…"
+              className="flex-grow rounded-lg border border-neutral-200 px-3 py-2 text-sm shadow-sm focus:border-neutral-400 focus:outline-none"
+            />
+            <span className="shrink-0 text-sm text-neutral-500">
               Showing {filtered.length} of {ideas.length || 405} ideas
             </span>
           </div>
-
-          {/* Row 1: search */}
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search product, idea, buyer, occupation…"
-            className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm shadow-sm focus:border-neutral-400 focus:outline-none"
-          />
 
           {/* Row 2: all filters on one horizontally-scrolling line */}
           <div className="flex flex-nowrap items-center gap-3 overflow-x-auto pb-1">

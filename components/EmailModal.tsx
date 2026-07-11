@@ -54,8 +54,8 @@ export default function EmailModal({ onSubmit, onSkip, onClose }: Props) {
         </h2>
         <p className="mt-2 text-sm leading-relaxed text-neutral-600">
           Drop your email so your likes are saved across devices and we don&apos;t
-          count you twice. No spam, no account — just a way to keep votes honest.
-          I&apos;ll share the results with everyone who participates.
+          count you twice. Share it with friends so you can compare notes and find
+          the ideas you&apos;d build together.
         </p>
 
         <input

@@ -14,6 +14,7 @@ import {
   hasVisitorId,
   setVisitorFromEmail,
   setVisitorSkip,
+  getVisitorEmail,
   getLikedIdeas,
   fetchLikeCounts,
   toggleLike,
@@ -28,6 +29,13 @@ type ModelFilter = 'all' | SourceModel
 type TopFilter = 'all' | 'self' | 'high' | 'mine'
 type SizeFilter = 'all' | Size
 type SortOption = 'default' | 'liked' | 'score'
+
+/** Mask an email to "first 3 chars + *** + @domain", e.g. ger***@microsoft.com. */
+function maskEmail(email: string): string {
+  const at = email.indexOf('@')
+  if (at < 0) return email
+  return email.slice(0, Math.min(3, at)) + '***' + email.slice(at)
+}
 
 function Select<T extends string>({
   label,
@@ -74,6 +82,9 @@ export default function Home() {
   // "Find your co-founder" overlap modal.
   const [cofounderOpen, setCofounderOpen] = useState(false)
 
+  // Raw email this visitor entered (client-only), shown as a masked pill.
+  const [visitorEmail, setVisitorEmail] = useState<string | null>(null)
+
   // filters
   const [search, setSearch] = useState('')
   const [field, setField] = useState<FieldFilter>('all')
@@ -86,6 +97,7 @@ export default function Home() {
   // Load data + like state on mount.
   useEffect(() => {
     setLikedSet(getLikedIdeas())
+    setVisitorEmail(getVisitorEmail())
     fetch('/data.json')
       .then((r) => r.json())
       .then((data: Idea[]) => setIdeas(data))
@@ -124,6 +136,7 @@ export default function Home() {
 
   const handleEmailSubmit = async (email: string) => {
     await setVisitorFromEmail(email)
+    setVisitorEmail(getVisitorEmail())
     setEmailPromptOpen(false)
     if (pendingIdea) {
       await doLike(pendingIdea)
@@ -189,6 +202,16 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-white">
+      {/* Masked email hint — only once the visitor has entered an email. */}
+      {visitorEmail && (
+        <div
+          className="fixed right-3 top-3 z-50 cursor-default rounded-full bg-neutral-100 px-3 py-1 text-xs text-neutral-400"
+          title="Share this email with friends so they can find your likes in Find your co-founder"
+        >
+          ♥ {maskEmail(visitorEmail)}
+        </div>
+      )}
+
       {/* Page header */}
       <header className="border-b border-neutral-200 bg-neutral-50">
         <div className="mx-auto max-w-7xl px-4 py-12 sm:py-16">

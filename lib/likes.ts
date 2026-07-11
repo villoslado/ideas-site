@@ -2,6 +2,7 @@ import { supabase, isSupabaseConfigured } from './supabase'
 
 const VISITOR_KEY = 'visitor_id'
 const LIKED_KEY = 'liked_ideas'
+const VISITOR_EMAIL_KEY = 'visitor_email'
 
 /**
  * The visitor id for this browser, or null if none is set yet. This is the
@@ -57,8 +58,17 @@ async function registerVoter(visitorId: string) {
 export async function setVisitorFromEmail(email: string): Promise<string> {
   const hash = await hashEmail(email)
   localStorage.setItem(VISITOR_KEY, hash)
+  // Client-only convenience: remember the raw email so we can show a masked
+  // hint of it. This never leaves the browser — only the hash is sent to Supabase.
+  localStorage.setItem(VISITOR_EMAIL_KEY, email.trim())
   await registerVoter(hash)
   return hash
+}
+
+/** The raw email this visitor entered, or null if they skipped. Client-only. */
+export function getVisitorEmail(): string | null {
+  if (typeof window === 'undefined') return null
+  return localStorage.getItem(VISITOR_EMAIL_KEY)
 }
 
 /**

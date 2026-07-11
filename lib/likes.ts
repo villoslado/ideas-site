@@ -38,30 +38,36 @@ export function hashEmail(email: string): Promise<string> {
   return sha256Hex(email.trim().toLowerCase())
 }
 
-/** Record a visitor id in the voters table (best-effort, dedup on visitor_id). */
-async function registerVoter(visitorId: string) {
+/**
+ * Record a visitor id in the voters table (best-effort, dedup on visitor_id).
+ * When a raw email is available it's stored alongside the hash so results can be
+ * shared back to voters by email.
+ */
+async function registerVoter(visitorId: string, email?: string) {
   if (!isSupabaseConfigured) return
+  const row = email ? { visitor_id: visitorId, email } : { visitor_id: visitorId }
   try {
     await supabase
       .from('voters')
-      .upsert({ visitor_id: visitorId }, { onConflict: 'visitor_id', ignoreDuplicates: true })
+      .upsert(row, { onConflict: 'visitor_id', ignoreDuplicates: true })
   } catch {
     // Network/permission failure — not fatal to liking.
   }
 }
 
 /**
- * Derive the visitor id from an email by hashing it (SHA-256). The raw email is
- * never stored — only the hash is persisted locally and registered as a voter.
- * Normalizes case/whitespace so the same email always yields the same id.
+ * Derive the visitor id from an email by hashing it (SHA-256). The hash keys the
+ * visitor's likes; the raw email is also stored in the voters table so results
+ * can be shared back by email. Normalizes case/whitespace so the same email
+ * always yields the same id.
  */
 export async function setVisitorFromEmail(email: string): Promise<string> {
+  const rawEmail = email.trim()
   const hash = await hashEmail(email)
   localStorage.setItem(VISITOR_KEY, hash)
-  // Client-only convenience: remember the raw email so we can show a masked
-  // hint of it. This never leaves the browser — only the hash is sent to Supabase.
-  localStorage.setItem(VISITOR_EMAIL_KEY, email.trim())
-  await registerVoter(hash)
+  // Remember the raw email locally so we can show a masked hint of it.
+  localStorage.setItem(VISITOR_EMAIL_KEY, rawEmail)
+  await registerVoter(hash, rawEmail)
   return hash
 }
 

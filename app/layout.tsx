@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "405 AI Business Ideas",
+  title: "405 Business Ideas",
   description:
     "405 AI-generated business ideas across three models — filter, search, and like.",
 };

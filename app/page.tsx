@@ -196,7 +196,7 @@ export default function Home() {
             style={{ borderColor: '#0EA5E9' }}
           >
             <h1 className="text-3xl font-bold tracking-tight text-neutral-900 sm:text-4xl">
-              405 AI Business Ideas
+              405 Business Ideas
             </h1>
             <p className="mt-3 max-w-3xl text-sm leading-relaxed text-neutral-600 sm:text-base">
               Three frontier AI models — Fable 5, GPT-5.6 Sol, and Grok 4.5 —

@@ -45,7 +45,8 @@ export function hashEmail(email: string): Promise<string> {
  */
 async function registerVoter(visitorId: string, email?: string) {
   if (!isSupabaseConfigured) return
-  const row = email ? { visitor_id: visitorId, email } : { visitor_id: visitorId }
+  const row: { visitor_id: string; email?: string } = { visitor_id: visitorId }
+  if (email) row.email = email
   try {
     await supabase
       .from('voters')

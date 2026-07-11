@@ -23,6 +23,7 @@ type FieldFilter = 'all' | Field
 type ModelFilter = 'all' | SourceModel
 type TopFilter = 'all' | 'self' | 'high'
 type SizeFilter = 'all' | Size
+type SortOption = 'default' | 'liked' | 'score'
 
 function Select<T extends string>({
   label,
@@ -66,6 +67,7 @@ export default function Home() {
   const [top, setTop] = useState<TopFilter>('all')
   const [build, setBuild] = useState<SizeFilter>('all')
   const [outreach, setOutreach] = useState<SizeFilter>('all')
+  const [sort, setSort] = useState<SortOption>('default')
 
   // Load data + like state on mount.
   useEffect(() => {
@@ -123,15 +125,55 @@ export default function Home() {
     })
   }, [ideas, search, field, model, top, build, outreach])
 
+  // Apply the chosen sort. 'default' preserves the original (filtered) order.
+  const sorted = useMemo(() => {
+    if (sort === 'default') return filtered
+    const copy = [...filtered]
+    if (sort === 'liked') {
+      copy.sort(
+        (a, b) => (counts[b.idea_key] ?? 0) - (counts[a.idea_key] ?? 0)
+      )
+    } else if (sort === 'score') {
+      copy.sort((a, b) => b.excitement_score - a.excitement_score)
+    }
+    return copy
+  }, [filtered, sort, counts])
+
+  // Featured row: the 5 most-liked ideas overall (only those with ≥1 like).
+  const topLiked = useMemo(() => {
+    return ideas
+      .filter((i) => (counts[i.idea_key] ?? 0) > 0)
+      .sort((a, b) => (counts[b.idea_key] ?? 0) - (counts[a.idea_key] ?? 0))
+      .slice(0, 5)
+  }, [ideas, counts])
+
   return (
     <div className="min-h-screen bg-white">
+      {/* Page header */}
+      <header className="bg-white">
+        <div className="mx-auto max-w-7xl px-4 pt-8 pb-6 text-center">
+          <h1 className="text-3xl font-bold tracking-tight text-neutral-900 sm:text-4xl">
+            405 AI Business Ideas
+          </h1>
+          <p className="mx-auto mt-3 max-w-3xl text-sm leading-relaxed text-neutral-600 sm:text-base">
+            Three frontier AI models — Claude Fable 5, GPT-5.6 Sol, and Grok 4.5
+            — each generated 135 business ideas targeting occupations most likely
+            to be replaced by AI. The 49 high-conviction ideas survived both
+            self-selection and independent cross-evaluation by a second model.
+          </p>
+          <p className="mt-3 text-sm italic text-neutral-400">
+            Like the ones you&apos;d build.
+          </p>
+        </div>
+      </header>
+
       {/* Sticky filter bar */}
-      <header className="sticky top-0 z-40 border-b border-neutral-200 bg-white/95 backdrop-blur">
+      <div className="sticky top-0 z-40 border-b border-neutral-200 bg-white/95 backdrop-blur">
         <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-3">
           <div className="flex items-baseline justify-between gap-4">
-            <h1 className="text-lg font-bold text-neutral-900">
+            <div className="text-lg font-bold text-neutral-900">
               405 AI Business Ideas
-            </h1>
+            </div>
             <span className="text-sm text-neutral-500">
               Showing {filtered.length} of {ideas.length || 405} ideas
             </span>
@@ -204,19 +246,51 @@ export default function Home() {
                 { value: 'l', label: 'L Hard' },
               ]}
             />
+            <Select<SortOption>
+              label="Sort by"
+              value={sort}
+              onChange={setSort}
+              options={[
+                { value: 'default', label: 'Default' },
+                { value: 'liked', label: 'Most liked' },
+                { value: 'score', label: 'Highest score' },
+              ]}
+            />
           </div>
         </div>
-      </header>
+      </div>
 
       {/* Card grid */}
       <main className="mx-auto max-w-7xl px-4 py-6">
+        {/* Featured "Most liked" row — only once at least one idea is liked. */}
+        {topLiked.length > 0 && (
+          <section className="mb-8">
+            <h2 className="mb-3 flex items-center gap-1.5 text-sm font-semibold text-neutral-700">
+              <span className="text-rose-500">♥</span> Most liked
+            </h2>
+            <div className="flex gap-4 overflow-x-auto pb-2">
+              {topLiked.map((idea) => (
+                <div key={idea.idea_key} className="w-80 shrink-0 sm:w-96">
+                  <IdeaCard
+                    idea={idea}
+                    likeCount={counts[idea.idea_key] ?? 0}
+                    liked={likedSet.has(idea.idea_key)}
+                    onOpen={setSelected}
+                    onLike={handleLike}
+                  />
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
         {filtered.length === 0 ? (
           <div className="py-24 text-center text-neutral-400">
             No ideas match these filters.
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {filtered.map((idea) => (
+            {sorted.map((idea) => (
               <IdeaCard
                 key={idea.idea_key}
                 idea={idea}

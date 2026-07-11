@@ -37,8 +37,10 @@ function Select<T extends string>({
   options: { value: T; label: string }[]
 }) {
   return (
-    <label className="flex items-center gap-1.5 text-sm">
-      <span className="font-medium text-neutral-500">{label}</span>
+    <label className="flex shrink-0 items-center gap-2 border-r border-neutral-200 pr-3 last:border-r-0 last:pr-0">
+      <span className="text-[11px] font-semibold uppercase tracking-wide text-neutral-400">
+        {label}
+      </span>
       <select
         value={value}
         onChange={(e) => onChange(e.target.value as T)}
@@ -139,14 +141,6 @@ export default function Home() {
     return copy
   }, [filtered, sort, counts])
 
-  // Featured row: the 5 most-liked ideas overall (only those with ≥1 like).
-  const topLiked = useMemo(() => {
-    return ideas
-      .filter((i) => (counts[i.idea_key] ?? 0) > 0)
-      .sort((a, b) => (counts[b.idea_key] ?? 0) - (counts[a.idea_key] ?? 0))
-      .slice(0, 5)
-  }, [ideas, counts])
-
   return (
     <div className="min-h-screen bg-white">
       {/* Page header */}
@@ -188,8 +182,8 @@ export default function Home() {
             className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm shadow-sm focus:border-neutral-400 focus:outline-none"
           />
 
-          {/* Row 2: field + model */}
-          <div className="flex flex-wrap gap-x-4 gap-y-2">
+          {/* Row 2: all filters on one horizontally-scrolling line */}
+          <div className="flex flex-nowrap items-center gap-3 overflow-x-auto pb-1">
             <Select<FieldFilter>
               label="Field"
               value={field}
@@ -210,10 +204,6 @@ export default function Home() {
                 { value: 'gpt56sol', label: MODEL_LABELS.gpt56sol },
               ]}
             />
-          </div>
-
-          {/* Row 3: top25 + build + outreach */}
-          <div className="flex flex-wrap gap-x-4 gap-y-2">
             <Select<TopFilter>
               label="Top 25"
               value={top}
@@ -247,7 +237,7 @@ export default function Home() {
               ]}
             />
             <Select<SortOption>
-              label="Sort by"
+              label="Sort"
               value={sort}
               onChange={setSort}
               options={[
@@ -262,28 +252,6 @@ export default function Home() {
 
       {/* Card grid */}
       <main className="mx-auto max-w-7xl px-4 py-6">
-        {/* Featured "Most liked" row — only once at least one idea is liked. */}
-        {topLiked.length > 0 && (
-          <section className="mb-8">
-            <h2 className="mb-3 flex items-center gap-1.5 text-sm font-semibold text-neutral-700">
-              <span className="text-rose-500">♥</span> Most liked
-            </h2>
-            <div className="flex gap-4 overflow-x-auto pb-2">
-              {topLiked.map((idea) => (
-                <div key={idea.idea_key} className="w-80 shrink-0 sm:w-96">
-                  <IdeaCard
-                    idea={idea}
-                    likeCount={counts[idea.idea_key] ?? 0}
-                    liked={likedSet.has(idea.idea_key)}
-                    onOpen={setSelected}
-                    onLike={handleLike}
-                  />
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
-
         {filtered.length === 0 ? (
           <div className="py-24 text-center text-neutral-400">
             No ideas match these filters.

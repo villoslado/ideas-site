@@ -206,7 +206,7 @@ export default function Home() {
               cross-evaluation by a second model.
             </p>
             <p className="mt-3 text-sm italic text-neutral-400">
-              Like the ones you&apos;d build.
+              Like the ones you&apos;d build. Find your co-founder.
             </p>
             <button
               onClick={() => setCofounderOpen(true)}

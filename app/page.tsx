@@ -151,9 +151,10 @@ export default function Home() {
           </h1>
           <p className="mx-auto mt-3 max-w-3xl text-sm leading-relaxed text-neutral-600 sm:text-base">
             Three frontier AI models — Claude Fable 5, GPT-5.6 Sol, and Grok 4.5
-            — each generated 135 business ideas targeting occupations most likely
-            to be replaced by AI. The 49 high-conviction ideas survived both
-            self-selection and independent cross-evaluation by a second model.
+            — each generated 135 small business software ideas targeting
+            occupations where AI is changing how work gets done. The 49
+            high-conviction ideas survived both self-selection and independent
+            cross-evaluation by a second model.
           </p>
           <p className="mt-3 text-sm italic text-neutral-400">
             Like the ones you&apos;d build.

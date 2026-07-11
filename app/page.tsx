@@ -11,13 +11,16 @@ import {
   MODEL_LABELS,
 } from '@/lib/types'
 import {
-  getVisitorId,
+  hasVisitorId,
+  setVisitorFromEmail,
+  setVisitorSkip,
   getLikedIdeas,
   fetchLikeCounts,
   toggleLike,
 } from '@/lib/likes'
 import IdeaCard from '@/components/IdeaCard'
 import DetailModal from '@/components/DetailModal'
+import EmailModal from '@/components/EmailModal'
 
 type FieldFilter = 'all' | Field
 type ModelFilter = 'all' | SourceModel
@@ -62,6 +65,11 @@ export default function Home() {
   const [likedSet, setLikedSet] = useState<Set<string>>(new Set())
   const [selected, setSelected] = useState<Idea | null>(null)
 
+  // Email prompt: shown on the first like before a visitor id exists. The
+  // pending idea is liked once they submit an email or skip.
+  const [emailPromptOpen, setEmailPromptOpen] = useState(false)
+  const [pendingIdea, setPendingIdea] = useState<Idea | null>(null)
+
   // filters
   const [search, setSearch] = useState('')
   const [field, setField] = useState<FieldFilter>('all')
@@ -73,7 +81,6 @@ export default function Home() {
 
   // Load data + like state on mount.
   useEffect(() => {
-    getVisitorId()
     setLikedSet(getLikedIdeas())
     fetch('/data.json')
       .then((r) => r.json())
@@ -82,7 +89,8 @@ export default function Home() {
     fetchLikeCounts().then(setCounts)
   }, [])
 
-  const handleLike = async (idea: Idea) => {
+  // Apply a like/unlike optimistically and persist it.
+  const doLike = async (idea: Idea) => {
     const key = idea.idea_key
     const wasLiked = likedSet.has(key)
     // Optimistic UI: flip liked state and nudge the count immediately.
@@ -98,6 +106,39 @@ export default function Home() {
     }))
     // Persist (localStorage always, Supabase best-effort).
     await toggleLike(key)
+  }
+
+  const handleLike = async (idea: Idea) => {
+    // First like ever on this device: ask for an email before recording it.
+    if (!hasVisitorId()) {
+      setPendingIdea(idea)
+      setEmailPromptOpen(true)
+      return
+    }
+    await doLike(idea)
+  }
+
+  const handleEmailSubmit = async (email: string) => {
+    await setVisitorFromEmail(email)
+    setEmailPromptOpen(false)
+    if (pendingIdea) {
+      await doLike(pendingIdea)
+      setPendingIdea(null)
+    }
+  }
+
+  const handleEmailSkip = async () => {
+    setVisitorSkip()
+    setEmailPromptOpen(false)
+    if (pendingIdea) {
+      await doLike(pendingIdea)
+      setPendingIdea(null)
+    }
+  }
+
+  const handleEmailClose = () => {
+    setEmailPromptOpen(false)
+    setPendingIdea(null)
   }
 
   const filtered = useMemo(() => {
@@ -280,6 +321,14 @@ export default function Home() {
           liked={likedSet.has(selected.idea_key)}
           onClose={() => setSelected(null)}
           onLike={handleLike}
+        />
+      )}
+
+      {emailPromptOpen && (
+        <EmailModal
+          onSubmit={handleEmailSubmit}
+          onSkip={handleEmailSkip}
+          onClose={handleEmailClose}
         />
       )}
     </div>

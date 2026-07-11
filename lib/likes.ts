@@ -3,14 +3,62 @@ import { supabase, isSupabaseConfigured } from './supabase'
 const VISITOR_KEY = 'visitor_id'
 const LIKED_KEY = 'liked_ideas'
 
-/** Stable per-browser visitor id, generated once and persisted in localStorage. */
-export function getVisitorId(): string {
-  if (typeof window === 'undefined') return ''
-  let id = localStorage.getItem(VISITOR_KEY)
-  if (!id) {
-    id = crypto.randomUUID()
-    localStorage.setItem(VISITOR_KEY, id)
+/**
+ * The visitor id for this browser, or null if none is set yet. This is the
+ * SHA-256 hash of the voter's email (same email → same hash → same id on any
+ * device) or a random per-device id if they skipped the email prompt.
+ */
+export function getVisitorId(): string | null {
+  if (typeof window === 'undefined') return null
+  return localStorage.getItem(VISITOR_KEY)
+}
+
+/** Whether this browser has a visitor id (i.e. the email prompt is answered). */
+export function hasVisitorId(): boolean {
+  return Boolean(getVisitorId())
+}
+
+/** Lowercase SHA-256 hex digest of `input`, via the Web Crypto API. */
+async function sha256Hex(input: string): Promise<string> {
+  const bytes = new TextEncoder().encode(input)
+  const digest = await crypto.subtle.digest('SHA-256', bytes)
+  return [...new Uint8Array(digest)]
+    .map((b) => b.toString(16).padStart(2, '0'))
+    .join('')
+}
+
+/** Record a visitor id in the voters table (best-effort, dedup on visitor_id). */
+async function registerVoter(visitorId: string) {
+  if (!isSupabaseConfigured) return
+  try {
+    await supabase
+      .from('voters')
+      .upsert({ visitor_id: visitorId }, { onConflict: 'visitor_id', ignoreDuplicates: true })
+  } catch {
+    // Network/permission failure — not fatal to liking.
   }
+}
+
+/**
+ * Derive the visitor id from an email by hashing it (SHA-256). The raw email is
+ * never stored — only the hash is persisted locally and registered as a voter.
+ * Normalizes case/whitespace so the same email always yields the same id.
+ */
+export async function setVisitorFromEmail(email: string): Promise<string> {
+  const hash = await sha256Hex(email.trim().toLowerCase())
+  localStorage.setItem(VISITOR_KEY, hash)
+  await registerVoter(hash)
+  return hash
+}
+
+/**
+ * Skip the email prompt: mint a random per-device visitor id so likes still
+ * dedupe on this browser and we don't ask again. Not shareable across devices.
+ */
+export function setVisitorSkip(): string {
+  const id = crypto.randomUUID()
+  localStorage.setItem(VISITOR_KEY, id)
+  registerVoter(id)
   return id
 }
 
@@ -60,8 +108,8 @@ export async function toggleLike(ideaKey: string): Promise<boolean> {
   else liked.delete(ideaKey)
   saveLikedIdeas(liked)
 
-  if (isSupabaseConfigured) {
-    const visitorId = getVisitorId()
+  const visitorId = getVisitorId()
+  if (isSupabaseConfigured && visitorId) {
     try {
       if (nowLiked) {
         await supabase

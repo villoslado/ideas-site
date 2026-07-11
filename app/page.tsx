@@ -185,21 +185,26 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-white">
       {/* Page header */}
-      <header className="bg-white">
-        <div className="mx-auto max-w-7xl px-4 pt-8 pb-6 text-center">
-          <h1 className="text-3xl font-bold tracking-tight text-neutral-900 sm:text-4xl">
-            405 AI Business Ideas
-          </h1>
-          <p className="mx-auto mt-3 max-w-3xl text-sm leading-relaxed text-neutral-600 sm:text-base">
-            Three frontier AI models — Claude Fable 5, GPT-5.6 Sol, and Grok 4.5
-            — each generated 135 small business software ideas targeting
-            occupations where AI is changing how work gets done. The 49
-            high-conviction ideas survived both self-selection and independent
-            cross-evaluation by a second model.
-          </p>
-          <p className="mt-3 text-sm italic text-neutral-400">
-            Like the ones you&apos;d build.
-          </p>
+      <header className="border-b border-neutral-200 bg-neutral-50">
+        <div className="mx-auto max-w-7xl px-4 py-12 sm:py-16">
+          <div
+            className="border-l-4 pl-5 sm:pl-6"
+            style={{ borderColor: '#0EA5E9' }}
+          >
+            <h1 className="text-3xl font-bold tracking-tight text-neutral-900 sm:text-4xl">
+              405 AI Business Ideas
+            </h1>
+            <p className="mt-3 max-w-3xl text-sm leading-relaxed text-neutral-600 sm:text-base">
+              Three frontier AI models — Claude Fable 5, GPT-5.6 Sol, and Grok
+              4.5 — each generated 135 small business software ideas targeting
+              occupations where AI is changing how work gets done. The 49
+              high-conviction ideas survived both self-selection and independent
+              cross-evaluation by a second model.
+            </p>
+            <p className="mt-3 text-sm italic text-neutral-400">
+              Like the ones you&apos;d build.
+            </p>
+          </div>
         </div>
       </header>
 

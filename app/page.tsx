@@ -224,10 +224,14 @@ export default function Home() {
             </h1>
             <p className="mt-3 max-w-3xl text-sm leading-relaxed text-neutral-600 sm:text-base">
               Three frontier AI models — Fable 5, GPT-5.6 Sol, and Grok 4.5 —
-              each generated 135 small business software ideas targeting
-              occupations where AI is changing how work gets done. The 49
-              high-conviction ideas survived both self-selection and independent
-              cross-evaluation by a second model.
+              independently scored 342 US occupations covering 143 million
+              workers on two dimensions: how much AI disrupts the work, and
+              whether cheaper AI expands demand or simply contracts headcount.
+              From the 45 occupations where at least 3 models agreed on
+              significant AI disruption, each model generated 3 business ideas —
+              135 each, 405 total. Then each model independently judged another
+              model&apos;s list. The 49 high-conviction ideas survived both
+              rounds.
             </p>
             <p className="mt-3 text-sm italic text-neutral-400">
               Like the ones you&apos;d build. Find your co-founder.
